@@ -1,78 +1,60 @@
 import express from 'express';
-import dotenv from 'dotenv';
+import pinoHttp from 'pino-http';
+import pino from 'pino';
 import cors from 'cors';
-import pino from 'pino-http';
-import { env } from './utils/env.js';
-import { getAllContacts, getContactById } from './services/contacts.js';
 
-dotenv.config();
+import { getAllContcats, getContactById } from './servises/contacts.js';
+const PORT = process.env.PORT || 3000;
 
-const PORT = Number(env('PORT', '3000'));
-
-export function setupServer() {
+export const setupServer = () => {
   const app = express();
 
-  app.use(cors());
-  app.use(express.json());
+  const logger = pino({
+    level: process.env.LOG_LEVEL || 'info',
+    transport: { target: 'pino-pretty' },
+  });
 
-  app.use(
-    pino({
-      transport: {
-        target: 'pino-pretty',
-      },
-    }),
-  );
+  app.use(cors());
+  app.use(pinoHttp({ logger }));
 
   app.get('/contacts', async (req, res) => {
-    const allContacts = await getAllContacts();
-    res.json({
+    const contacts = await getAllContcats();
+
+    res.send({
       status: 200,
       message: 'Successfully found contacts!',
-      data: allContacts,
+      data: contacts,
     });
   });
 
-  app.get('/contacts/:contactId', async (req, res) => {
+  app.get('/contacts/:contactId', async (req, res, next) => {
     const { contactId } = req.params;
 
-    try {
-      const contact = await getContactById(contactId);
+    const contact = await getContactById(contactId);
 
-      if (contact === null) {
-        res.status(404).json({
-          message: 'Contact not found',
-        });
-        return;
-      }
-      res.json({
-        status: 200,
-        message: `Successfully found contact with id ${contactId}!`,
-        data: contact,
-      });
-    } catch (error) {
-      res.status(500).json({
-        message: 'Internal server error',
-      });
-      console.error(error.message);
+    if (!contact) {
+      return res
+        .status(404)
+        .send({ status: 404, message: 'Contact not found' });
     }
+
+    res.send({
+      status: 200,
+      message: `Successfully found contact with id: ${contactId}`,
+      data: contact,
+    });
   });
 
   app.use('*', (req, res, next) => {
-    res.status(404).json({
-      message: 'Not found',
-    });
-    next();
+    res.status(404).send({ status: 404, message: 'Route not found' });
   });
 
-  app.use('*', (error, req, res, next) => {
-    res.status(500).json({
-      message: 'Something went wrong',
-      error: error.message,
-    });
-    next();
+  app.use((error, req, res, next) => {
+    console.error(error);
+    res.status(500).send({ status: 500, message: 'Internal server error' });
   });
 
   app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+    console.log(`Server is running on ${PORT}`);
   });
-}
+};
