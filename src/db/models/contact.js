@@ -1,6 +1,6 @@
-import { model, Schema } from 'mongoose';
+import { Schema, model } from 'mongoose';
 
-const contactSchema = new Schema(
+const ContactSchema = new Schema(
   {
     name: {
       type: String,
@@ -12,21 +12,17 @@ const contactSchema = new Schema(
     },
     email: {
       type: String,
+      reqired: true,
     },
-    isFavourite: {
-      type: Boolean,
-      default: false,
-    },
+    isFavourite: { type: Boolean, default: false },
     contactType: {
       type: String,
       enum: ['work', 'home', 'personal'],
+      required: true,
       default: 'personal',
     },
   },
-  {
-    timestamps: true,
-    versionKey: false,
-  },
+  { timestamps: true, versionKey: false },
 );
 
-export const ContactsCollection = model('contacts', contactSchema);
+export const ContactsColection = model('contacts', ContactSchema);
