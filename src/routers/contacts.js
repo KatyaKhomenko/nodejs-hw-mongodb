@@ -5,9 +5,9 @@ import {
   getContactByIdController,
   getContactsController,
   updateContactController,
-} from '../src/controllers/contacts.js';
+} from '../controllers/contacts.js';
 
-import { ctrlWrapper } from '../src/utils/ctrlWrapper.js';
+import { ctrlWrapper } from '../utils/ctrlWrapper.js';
 const router = Router();
 
 router.get('/contacts', ctrlWrapper(getContactsController));
