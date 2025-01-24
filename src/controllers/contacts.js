@@ -5,7 +5,7 @@ import {
   getContactById,
   patchContact,
   postContact,
-} from '../servises/contacts.js';
+} from '../services/contacts.js';
 
 export const getContactsController = async (_req, res) => {
   const contacts = await getAllContcats();
